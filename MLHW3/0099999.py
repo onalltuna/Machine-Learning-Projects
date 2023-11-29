@@ -123,6 +123,23 @@ print("Running Mean Smoother => RMSE is {} when h is {}".format(rmse, bin_width)
 # should return a numpy array with shape (N,)
 def kernel_smoother(x_query, x_train, y_train, bin_width):
     # your implementation starts below
+    y_hat = np.zeros(len(x_query))
+
+    for i, x_q in enumerate(x_query):
+        in_bin_train = np.zeros((len(x_train)))
+        in_bin_train2 = np.zeros((len(x_train)))
+        for j, x_t in enumerate(x_train):
+            x = (1.0 / np.sqrt(2 * math.pi) *
+                               np.exp(-0.5 * (x_t - x_q)**2 / bin_width**2)) * y_train[j]
+            y = (1.0 / np.sqrt(2 * math.pi) *
+                               np.exp(-0.5 * (x_t - x_q)**2 / bin_width**2))
+            in_bin_train[j] = x 
+            in_bin_train2[j] = y
+        
+        y_hat[i] = np.sum(in_bin_train) / np.sum(in_bin_train2)
+
+    # print("in_bin_train:", in_bin_train)
+    # print("y_train: ", len(y_train))
 
     # your implementation ends above
     return (y_hat)
