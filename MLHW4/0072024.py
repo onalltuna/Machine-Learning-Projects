@@ -150,7 +150,27 @@ def decision_tree_regression_test(X_query, is_terminal, node_features, node_spli
 
 def extract_rule_sets(is_terminal, node_features, node_splits, node_means):
     # your implementation starts below
-    print("aa")
+    terminal_nodes = [key for key, value in is_terminal.items()
+                  if value == True]
+    
+    for terminal_node in terminal_nodes:
+        index = terminal_node
+        rules = np.array([])
+        while index > 1:
+            parent = np.floor(index / 2)
+            if index % 2 == 0:
+                # if node is left child of its parent
+                rules = np.append(rules, 
+                                "x{:d} > {:.2f}".format(node_features[parent] + 1,
+                                                        node_splits[parent]))
+            else:
+                # if node is right child of its parent
+                rules = np.append(rules,
+                                "x{:d} <= {:.2f}".format(node_features[parent] + 1,
+                                                        node_splits[parent]))
+            index = parent
+        rules = np.flip(rules)
+        print("Node {:02}: {} => {}".format(terminal_node, rules, node_means[terminal_node]))
 
     # your implementation ends above
 
