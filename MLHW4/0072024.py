@@ -79,10 +79,11 @@ def decision_tree_regression_train(X_train, y_train, P):
                 unique_values = np.sort(np.unique(X_train[data_indices, d]))
                 split_positions = (unique_values[1:] + unique_values[:-1]) / 2
                 split_errors = np.repeat(0.0, len(split_positions))
-                x = 0
-                for s in split_positions:
-                    left_indices = data_indices[X_train[data_indices, d] > s]
-                    right_indices = data_indices[X_train[data_indices, d] <= s]
+                for s in range(len(split_positions)):
+                    left_indices = data_indices[X_train[data_indices, d]
+                                                > split_positions[s]]
+                    right_indices = data_indices[X_train[data_indices, d]
+                                                 <= split_positions[s]]
 
                     left_error = np.sum(
                         (y_train[left_indices] - np.mean(y_train[left_indices])) ** 2)
@@ -90,8 +91,7 @@ def decision_tree_regression_train(X_train, y_train, P):
                         (y_train[right_indices] - np.mean(y_train[right_indices])) ** 2)
 
                     total_error = left_error + right_error
-                    split_errors[x] = total_error
-                    x += 1
+                    split_errors[s] = total_error
 
                 min_errors[d] = np.min(split_errors)
                 best_splits[d] = split_positions[np.argmin(split_errors)]
@@ -125,7 +125,7 @@ def decision_tree_regression_test(X_query, is_terminal, node_features, node_spli
     # your implementation starts below
 
     N_query = len(X_query)
-    y_hat = np.repeat(0, N_query)
+    y_hat = np.repeat(0.0, N_query)
 
     for i in range(N_query):
         index = 1
@@ -138,8 +138,6 @@ def decision_tree_regression_test(X_query, is_terminal, node_features, node_spli
                     index = 2 * index
                 else:
                     index = 2 * index + 1
-    y_hat = np.array(y_hat)
-
     # your implementation ends above
     return (y_hat)
 
@@ -151,8 +149,8 @@ def decision_tree_regression_test(X_query, is_terminal, node_features, node_spli
 def extract_rule_sets(is_terminal, node_features, node_splits, node_means):
     # your implementation starts below
     terminal_nodes = [key for key, value in is_terminal.items()
-                  if value == True]
-    
+                      if value == True]
+
     for terminal_node in terminal_nodes:
         index = terminal_node
         rules = np.array([])
@@ -160,17 +158,18 @@ def extract_rule_sets(is_terminal, node_features, node_splits, node_means):
             parent = np.floor(index / 2)
             if index % 2 == 0:
                 # if node is left child of its parent
-                rules = np.append(rules, 
-                                "x{:d} > {:.2f}".format(node_features[parent] + 1,
-                                                        node_splits[parent]))
+                rules = np.append(rules,
+                                  "x{:d} > {:.2f}".format(node_features[parent] + 1,
+                                                          node_splits[parent]))
             else:
                 # if node is right child of its parent
                 rules = np.append(rules,
-                                "x{:d} <= {:.2f}".format(node_features[parent] + 1,
-                                                        node_splits[parent]))
+                                  "x{:d} <= {:.2f}".format(node_features[parent] + 1,
+                                                           node_splits[parent]))
             index = parent
         rules = np.flip(rules)
-        print("Node {:02}: {} => {}".format(terminal_node, rules, node_means[terminal_node]))
+        print("Node {:02}: {} => {}".format(
+            terminal_node, rules, node_means[terminal_node]))
 
     # your implementation ends above
 
