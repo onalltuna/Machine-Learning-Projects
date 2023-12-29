@@ -94,10 +94,33 @@ print(priors)
 
 def draw_clustering_results(X, K, group_means, group_covariances, means, covariances, assignments):
     # your implementation starts below
-    print("here")
+    cluster_colors = np.array(["#1f78b4", "#33a02c", "#e31a1c", "#ff7f00", "#6a3d9a", "#b15928",
+                               "#a6cee3", "#b2df8a", "#fb9a99", "#fdbf6f", "#cab2d6", "#ffff99"])
 
-    
+    xmin = X[:, 0].min()
+    xmax = X[:, 0].max()
+    ymin = X[:, 1].min() - 1
+    ymax = X[:, 1].max() + 1
 
+    x, y = np.meshgrid(np.linspace(xmin, xmax),
+                       np.linspace(ymin, ymax))
+
+    for c in range(K):
+        plt.plot(X[assignments == c, 0], X[assignments == c, 1],
+                 ".", markersize=10, color=cluster_colors[c])
+
+        xy_grid = np.column_stack((x.flatten(), y.flatten()))
+        pdf_values = stats.multivariate_normal.pdf(
+            xy_grid, means[c], covariances[c]).reshape(x.shape)
+        plt.contour(x, y, pdf_values, levels=[0.01], colors=cluster_colors[c])
+
+        initial_pdf_values = stats.multivariate_normal.pdf(
+            xy_grid, group_means[c], group_covariances[c]).reshape(x.shape)
+        plt.contour(x, y, initial_pdf_values, levels=[
+                    0.01], colors="black", linestyles="dashed")
+    plt.xlabel("$x_1$")
+    plt.ylabel("$x_2$")
+    plt.show()
     # your implementation ends above
 
 
