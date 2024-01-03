@@ -67,11 +67,12 @@ def em_clustering_algorithm(X, K, means, covariances, priors):
     N = X.shape[0]
 
     for i in range(100):
-        hs = [stats.multivariate_normal(means[k], covariances[k]).pdf(
-            X) * priors[k] for k in range(K)]
+        hs = [stats.multivariate_normal(means[c], covariances[c]).pdf(
+            X) * priors[c] for c in range(K)]
         hs_sum = np.sum(hs, axis=0)
 
         expt = np.array([h / hs_sum for h in hs])
+        priors = np.array([np.sum(expt[c], axis=0) / N for c in range(K)])
 
         means = np.vstack(
             [np.sum(expt[c][:, None] * X, axis=0) / np.sum(expt[c]) for c in range(K)])
@@ -83,7 +84,6 @@ def em_clustering_algorithm(X, K, means, covariances, priors):
                 covariances[c] += np.matmul(dif, dif.T) * expt[c][i]
             covariances[c] /= np.sum(expt[c], axis=0)
 
-        priors = [np.sum(expt[k], axis=0) / N for k in range(K)]
         assignments = np.argmax(expt, axis=0)
 
     # your implementation ends above
@@ -105,17 +105,26 @@ def draw_clustering_results(X, K, group_means, group_covariances, means, covaria
     cluster_colors = np.array(["#1f78b4", "#33a02c", "#e31a1c", "#ff7f00", "#6a3d9a", "#b15928",
                                "#a6cee3", "#b2df8a", "#fb9a99", "#fdbf6f", "#cab2d6", "#ffff99"])
 
-    xmin = X[:, 0].min()
-    xmax = X[:, 0].max()
-    ymin = X[:, 1].min() - 1
-    ymax = X[:, 1].max() + 1
+    xmin = -8
+    xmax = 8
+    ymin = -8
+    ymax = 8
 
-    x, y = np.meshgrid(np.linspace(xmin, xmax),
-                       np.linspace(ymin, ymax))
+    if X[:, 0].min() < -8:
+        xmin = X[:, 0].min()
+    if X[:, 0].max() > 8:
+        xmax = X[:, 0].max()
+    if X[:, 1].min() < -8:
+        ymin = X[:, 1].min()
+    if X[:, 1].max() > 8:
+        ymax = X[:, 1].max()
+
+    x, y = np.meshgrid(np.linspace(xmin, xmax, 500),
+                       np.linspace(ymin, ymax, 500))
 
     for c in range(K):
         plt.plot(X[assignments == c, 0], X[assignments == c, 1],
-                 ".", markersize=10, color=cluster_colors[c])
+                 ".", markersize=7, color=cluster_colors[c])
 
         xy_grid = np.column_stack((x.flatten(), y.flatten()))
         pdf_values = stats.multivariate_normal.pdf(
@@ -126,10 +135,13 @@ def draw_clustering_results(X, K, group_means, group_covariances, means, covaria
             xy_grid, group_means[c], group_covariances[c]).reshape(x.shape)
         plt.contour(x, y, initial_pdf_values, levels=[
                     0.01], colors="black", linestyles="dashed")
-        
+
     plt.xlabel("$x_1$")
     plt.ylabel("$x_2$")
+    plt.gca().set_aspect('equal')
+    plt.savefig('cluster_drawing.pdf', format='pdf')
     plt.show()
+
     # your implementation ends above
 
 
